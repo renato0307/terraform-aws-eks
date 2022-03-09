@@ -152,18 +152,34 @@ data "tls_certificate" "this" {
   url = aws_eks_cluster.this[0].identity[0].oidc[0].issuer
 }
 
-resource "aws_iam_openid_connect_provider" "oidc_provider" {
-  count = var.create && var.enable_irsa ? 1 : 0
+# resource "aws_iam_openid_connect_provider" "oidc_provider" {
+#   count = var.create && var.enable_irsa ? 1 : 0
 
-  client_id_list  = distinct(compact(concat(["sts.${data.aws_partition.current.dns_suffix}"], var.openid_connect_audiences)))
-  thumbprint_list = concat([data.tls_certificate.this[0].certificates[0].sha1_fingerprint], var.custom_oidc_thumbprints)
-  url             = aws_eks_cluster.this[0].identity[0].oidc[0].issuer
+#   client_id_list  = distinct(compact(concat(["sts.${data.aws_partition.current.dns_suffix}"], var.openid_connect_audiences)))
+#   thumbprint_list = concat([data.tls_certificate.this[0].certificates[0].sha1_fingerprint], var.custom_oidc_thumbprints)
+#   url             = aws_eks_cluster.this[0].identity[0].oidc[0].issuer
+
+#   tags = merge(
+#     { Name = "${var.cluster_name}-eks-irsa" },
+#     var.tags
+#   )
+# }
+
+resource "aws_iam_openid_connect_provider" "oidc_provider" {
+  count = var.enable_irsa && var.create_eks ? 1 : 0
+
+  client_id_list  = local.client_id_list
+  thumbprint_list = [var.eks_oidc_root_ca_thumbprint]
+  url             = local.cluster_oidc_issuer_url
 
   tags = merge(
-    { Name = "${var.cluster_name}-eks-irsa" },
+    {
+      Name = "${var.cluster_name}-eks-irsa"
+    },
     var.tags
   )
 }
+
 
 ################################################################################
 # IAM Role
