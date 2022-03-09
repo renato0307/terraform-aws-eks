@@ -168,7 +168,6 @@ locals {
   cluster_oidc_issuer_url = flatten(concat(aws_eks_cluster.this[*].identity[*].oidc[0].issuer, [""]))[0]
   sts_principal           = "sts.${data.aws_partition.current.dns_suffix}"
   client_id_list          = distinct(compact(concat([local.sts_principal], var.openid_connect_audiences)))
-  policy_arn_prefix       = "arn:${data.aws_partition.current.partition}:iam::aws:policy"
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
