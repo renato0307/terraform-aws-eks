@@ -422,3 +422,9 @@ variable "eks_managed_node_group_defaults" {
   type        = any
   default     = {}
 }
+
+variable "include_cluster_security_group" {
+  description = "Determines if cluster security group should be included in node launch templates"
+  type        = bool
+  default     = false
+}  
