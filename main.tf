@@ -76,7 +76,7 @@ locals {
   cluster_sg_name   = coalesce(var.cluster_security_group_name, "${var.cluster_name}-cluster")
   create_cluster_sg = var.create && var.create_cluster_security_group
 
-  cluster_security_group_id = local.create_cluster_sg ? aws_security_group.cluster[0].id : var.cluster_security_group_id
+  cluster_security_group_id = local.create_cluster_sg ? aws_security_group.cluster[0].id : (var.include_cluster_security_group ? var.cluster_security_group_id : null)
 
   cluster_security_group_rules = {
     ingress_nodes_443 = {
