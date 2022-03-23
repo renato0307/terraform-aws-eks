@@ -52,11 +52,24 @@ resource "aws_iam_policy" "cni_ipv6_policy" {
 # Plus NTP/HTTPS (otherwise nodes fail to launch)
 ################################################################################
 
+data "aws_security_groups" "eks_created_cluster_sg" {
+  count = length(var.node_security_group_filters) > 0 ? 1 : 0
+  
+  dynamic "filter" {
+    for_each = var.node_security_group_filters
+    content {
+      name = filter.value["name"]
+      values = filter.value["values"]
+    }
+  }
+}
+
 locals {
   node_sg_name   = coalesce(var.node_security_group_name, "${var.cluster_name}-node")
   create_node_sg = var.create && var.create_node_security_group
 
   node_security_group_id = local.create_node_sg ? aws_security_group.node[0].id : var.node_security_group_id
+  node_security_group_id_list = distinct(compact(concat([local.node_security_group_id], try(data.aws_security_groups.eks_created_cluster_sg[0].ids, []))))
 
   node_security_group_rules = {
     egress_cluster_443 = {
@@ -281,7 +294,7 @@ module "eks_managed_node_group" {
 
   ebs_optimized                          = try(each.value.ebs_optimized, var.eks_managed_node_group_defaults.ebs_optimized, null)
   key_name                               = try(each.value.key_name, var.eks_managed_node_group_defaults.key_name, null)
-  vpc_security_group_ids                 = compact(concat([local.node_security_group_id], try(each.value.vpc_security_group_ids, var.eks_managed_node_group_defaults.vpc_security_group_ids, [])))
+  vpc_security_group_ids                 = compact(concat(local.node_security_group_id_list, try(each.value.vpc_security_group_ids, var.eks_managed_node_group_defaults.vpc_security_group_ids, [])))
   launch_template_default_version        = try(each.value.launch_template_default_version, var.eks_managed_node_group_defaults.launch_template_default_version, null)
   update_launch_template_default_version = try(each.value.update_launch_template_default_version, var.eks_managed_node_group_defaults.update_launch_template_default_version, true)
   disable_api_termination                = try(each.value.disable_api_termination, var.eks_managed_node_group_defaults.disable_api_termination, null)
@@ -405,7 +418,7 @@ module "self_managed_node_group" {
   instance_type   = try(each.value.instance_type, var.self_managed_node_group_defaults.instance_type, "m6i.large")
   key_name        = try(each.value.key_name, var.self_managed_node_group_defaults.key_name, null)
 
-  vpc_security_group_ids                 = compact(concat([local.node_security_group_id], try(each.value.vpc_security_group_ids, var.self_managed_node_group_defaults.vpc_security_group_ids, [])))
+  vpc_security_group_ids                 = compact(concat(local.node_security_group_id_list, try(each.value.vpc_security_group_ids, var.self_managed_node_group_defaults.vpc_security_group_ids, [])))
   cluster_security_group_id              = local.cluster_security_group_id
   launch_template_default_version        = try(each.value.launch_template_default_version, var.self_managed_node_group_defaults.launch_template_default_version, null)
   update_launch_template_default_version = try(each.value.update_launch_template_default_version, var.self_managed_node_group_defaults.update_launch_template_default_version, true)
