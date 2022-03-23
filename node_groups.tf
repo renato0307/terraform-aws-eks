@@ -55,7 +55,7 @@ resource "aws_iam_policy" "cni_ipv6_policy" {
 data "aws_security_group" "cluster_sg" {
   filter {
     name = "description"
-    value = "EKS created security group applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads."
+    values = ["EKS created security group applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads."]
   }
 }
 
