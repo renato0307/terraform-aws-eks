@@ -245,8 +245,8 @@ variable "use_node_security_group_filters" {
 
 variable "node_security_group_filters" {
   description = "A map of filters to add additional security groups, as supported by https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_groups"
-  type        = map(string)
-  default     = {}
+  type        = list(map(string))
+  default     = []
 }
 
 ################################################################################
