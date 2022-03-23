@@ -239,7 +239,10 @@ variable "node_security_group_tags" {
 
 variable "node_security_group_filters" {
   description = "A map of filters to add additional security groups, as supported by https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_groups"
-  type        = list(map(string))
+  type = list(object({
+    name   = string
+    values = list(string)
+  }))
   default     = []
 }
 
