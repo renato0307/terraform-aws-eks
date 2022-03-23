@@ -237,12 +237,6 @@ variable "node_security_group_tags" {
   default     = {}
 }
 
-variable "use_node_security_group_filters" {
-  description = "If true var.node_security_group_filters must be set"
-  type        = bool
-  default     = false
-}
-
 variable "node_security_group_filters" {
   description = "A map of filters to add additional security groups, as supported by https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_groups"
   type        = list(map(string))

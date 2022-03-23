@@ -53,7 +53,7 @@ resource "aws_iam_policy" "cni_ipv6_policy" {
 ################################################################################
 
 data "aws_security_group" "eks_created_cluster_sg" {
-  count = var.use_node_security_group_filters ? 1 : 0
+  count = length(var.node_security_group_filters) > 0 ? 1 : 0
   
   dynamic "filter" {
     for_each = var.node_security_group_filters
