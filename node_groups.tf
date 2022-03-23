@@ -57,6 +57,8 @@ data "aws_security_group" "cluster_sg" {
     name = "description"
     values = ["EKS created security group applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads."]
   }
+
+  vpc_id = var.vpc_id
 }
 
 locals {
