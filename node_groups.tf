@@ -52,13 +52,16 @@ resource "aws_iam_policy" "cni_ipv6_policy" {
 # Plus NTP/HTTPS (otherwise nodes fail to launch)
 ################################################################################
 
-data "aws_security_group" "cluster_sg" {
-  filter {
-    name = "description"
-    values = ["EKS created security group applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads."]
+data "aws_security_group" "eks_created_cluster_sg" {
+  count = var.use_node_security_group_filters ? 1 : 0
+  
+  dynamic "filter" {
+    for_each = var.node_security_group_filters
+    content {
+      name = filter.value["name"]
+      values = filter.value["values"]
+    }
   }
-
-  vpc_id = var.vpc_id
 }
 
 locals {
@@ -66,7 +69,7 @@ locals {
   create_node_sg = var.create && var.create_node_security_group
 
   node_security_group_id = local.create_node_sg ? aws_security_group.node[0].id : var.node_security_group_id
-  node_security_group_id_list = distinct(compact(concat([local.node_security_group_id], [data.aws_security_group.cluster_sg.id])))
+  node_security_group_id_list = distinct(compact(concat([local.node_security_group_id], [try(data.aws_security_group.eks_created_cluster_sg[0].id, "")])))
 
   node_security_group_rules = {
     egress_cluster_443 = {
