@@ -243,7 +243,7 @@ variable "node_security_group_filters" {
     name   = string
     values = list(string)
   }))
-  default     = []
+  default  = []
 }
 
 ################################################################################
