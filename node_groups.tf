@@ -64,7 +64,7 @@ locals {
   create_node_sg = var.create && var.create_node_security_group
 
   node_security_group_id = local.create_node_sg ? aws_security_group.node[0].id : var.node_security_group_id
-  node_security_group_id_list = distinct(compact(concat([node_security_group_id], [data.aws_security_group.cluster_sg.id])))
+  node_security_group_id_list = distinct(compact(concat([local.node_security_group_id], [data.aws_security_group.cluster_sg.id])))
 
   node_security_group_rules = {
     egress_cluster_443 = {
